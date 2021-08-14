@@ -1,0 +1,14 @@
+# This file contains settings of cavetools that can be changed in
+# minetest.conf
+
+#    Include flashlamps by default
+#    (default = true)
+cavetool_flashlamps (Include flashlamps) bool true
+
+#    Include depthfinders by default
+#    (default = true)
+cavetool_depthfinders (Include depthfinders) bool true
+
+#    Include ladder extensions by default
+#    (default = true)
+cavetool_ladders (Include ladder extensions) bool true
