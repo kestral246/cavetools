@@ -24,6 +24,15 @@ An override to the default ladders to allow them to be easily extended down by j
 - **Note:** This can create freestanding ladders. If the lack of ladder thickness bothers you, you can use Linuxdirks redef mod, which provides 3-d ladders.
 
 
+Configuration
+-------------
+
+Each category can be selectively enabled or disabled in the minetest.conf file.
+
+- cavetool_flashlamps = true/false
+- cavetool_depthfinders = true/false
+- cavetool_ladders = true/false
+
 
 Dependencies
 ------------
