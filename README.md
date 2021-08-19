@@ -21,25 +21,25 @@ A set of depth finders that probe depth in the direction the player is pointed.
 
 An override to the default ladders to allow them to be easily extended down by just right clicking a ladder with another ladder.
 
-- **Note:** This can create freestanding ladders. If the lack of ladder thickness bothers you, you can use Linuxdirks redef mod, which provides 3-d ladders.
-
+- This can create freestanding ladders. If the lack of ladder thickness bothers you, you can use Linuxdirks **redef** mod, which provides 3-d ladders.
+- The **ropes** mod by FaceDeer has a similar option for ladders, but extends them upward. Cave Tools' ladder override will conflict with this, but can be disabled (see configuration below).
 
 Configuration
 -------------
 
-Each category can be selectively enabled or disabled in the minetest.conf file.
+Each separate feature can be selectively enabled or disabled in the minetest.conf file.
 
-- cavetool_flashlamps = true/false
-- cavetool_depthfinders = true/false
-- cavetool_ladders = true/false
+- cavetool_flashlamps = **true**/false
+- cavetool_depthfinders = **true**/false
+- cavetool_ladders = **true**/false
 
 
 Dependencies
 ------------
 
-- Ladder overrides only enabled if default exists.
-- Craft recipes optionally depend on default and tnt.
-- Wand also optionally depends on mana.
+- Ladder overrides only enabled if **default** exists.
+- Craft recipes optionally depend on **default** and **tnt**.
+- Wand also optionally depends on **mana**.
 
 
 Craft Recipes
