@@ -199,7 +199,7 @@ minetest.register_tool("cavetools:flash_lamp", {
 	stack_max = 1,
 	on_use = function(itemstack, player, pointed_thing)
 		local radius = 12  -- or 18
-		local light_cone = math.pi/6  -- 2*30°
+		local light_cone = math.pi/5  -- 2*36°
 		local wear = math.floor(65535/60)  -- increase to 60
 		local mana = 0
 		local worn_item = use_lamp(player, itemstack, radius, wear, mana, light_cone)
