@@ -1,20 +1,19 @@
 -- Flash Lamps (formerly Wand of Illumination) [flash_lamps]
 -- by David G (kestral246@gmail.com)
--- 2020-06-22
+-- 2024-03-13
 
 -- Lights up what's in front, but only for a moment.
 -- Provides a flash_lamp, flash_wand, and super_flash_lamp.
 
--- How bright and wide to make lights.
+-- How bright to make lights.
 -- For reference, the default:torch has a brightness of 12.
 local brightness_value = 11
-local light_cone = math.pi/3  -- corresponds to 120°
 
 -- Maximum number of nodes to check (use debug to determine).
-local maxcount = 100000
+local maxcount = 15000
 
--- The wear, mana, and radius can now be set independently for each lamp tool.
--- For extended range, all of these values are doubled.
+-- The wear, mana, radius, and light cone can now be set independently for each lamp tool.
+-- For extended range, wear and mana cost are doubled, light_cone halved, and radius increased by 50%.
 
 -- Setting to allow optional use of ABM for light decay.
 -- Make sure all lights have faded before disabling this option.
@@ -103,7 +102,7 @@ local tlength = function(T)
 end
 
 -- Scan neighboring nodes, flag for checking if air.
-local scan_node = function(pname, pos, origin, vdir, maxdist)
+local scan_node = function(pname, pos, origin, vdir, maxdist, light_cone)
 	-- Update to send out a cone of light in direction pointed.
 	-- Need small sphere to get cone of light out.
 	local radius = vector.distance(origin, pos)
@@ -120,15 +119,15 @@ local scan_node = function(pname, pos, origin, vdir, maxdist)
 end
 
 -- To check, scan all neighbors and determine if this node needs to be converted to light.
-local check_node = function(pname, pos, origin, vdir, maxdist)
+local check_node = function(pname, pos, origin, vdir, maxdist, light_cone)
 	local enc_pos = minetest.hash_node_position(pos)
 	local name = minetest.get_node(pos).name
-	scan_node(pname, vector.add(pos, {x=0,y=0,z=1}), origin, vdir, maxdist)  -- north
-	scan_node(pname, vector.add(pos, {x=1,y=0,z=0}), origin, vdir, maxdist)  -- east
-	scan_node(pname, vector.add(pos, {x=0,y=0,z=-1}), origin, vdir, maxdist)  -- south
-	scan_node(pname, vector.add(pos, {x=-1,y=0,z=0}), origin, vdir, maxdist)  -- west
-	scan_node(pname, vector.add(pos, {x=0,y=-1,z=0}), origin, vdir, maxdist)  -- down
-	scan_node(pname, vector.add(pos, {x=0,y=1,z=0}), origin, vdir, maxdist)  -- up
+	scan_node(pname, vector.add(pos, {x=0,y=0,z=1}), origin, vdir, maxdist, light_cone)  -- north
+	scan_node(pname, vector.add(pos, {x=1,y=0,z=0}), origin, vdir, maxdist, light_cone)  -- east
+	scan_node(pname, vector.add(pos, {x=0,y=0,z=-1}), origin, vdir, maxdist, light_cone)  -- south
+	scan_node(pname, vector.add(pos, {x=-1,y=0,z=0}), origin, vdir, maxdist, light_cone)  -- west
+	scan_node(pname, vector.add(pos, {x=0,y=-1,z=0}), origin, vdir, maxdist, light_cone)  -- down
+	scan_node(pname, vector.add(pos, {x=0,y=1,z=0}), origin, vdir, maxdist, light_cone)  -- up
 	if name == "air" and ((pos.x%4 == 0 and pos.y%8 == 0 and pos.z%4 == 0) or
 			(pos.x%4 == 2 and pos.y%8 == 4 and pos.z%4 == 2))
 			and minetest.get_node_light(pos) < brightness_value then
@@ -136,7 +135,7 @@ local check_node = function(pname, pos, origin, vdir, maxdist)
 	end
 end
 
-local use_lamp = function(player, itemstack, radius, wear, mana)
+local use_lamp = function(player, itemstack, radius, wear, mana, light_cone)
 	local pname = player:get_player_name()
 	local pos = vector.add(vector.round(player:get_pos()), {x=0,y=1,z=0})  -- position of wand
 	local theta = math.fmod(player:get_look_horizontal() + math.pi/2, 2*math.pi)
@@ -148,7 +147,8 @@ local use_lamp = function(player, itemstack, radius, wear, mana)
 	local wear_cost = wear
 	local mana_cost = mana
 	if key_stats.sneak or key_stats.aux1 then  -- extended
-		radius = 2 * radius
+		radius = 1.5 * radius
+		light_cone = light_cone / 2
 		wear_cost = 2 * wear_cost
 		mana_cost = 2 * mana_cost
 	end
@@ -161,7 +161,7 @@ local use_lamp = function(player, itemstack, radius, wear, mana)
 		table.insert(tocheck[pname], minetest.hash_node_position(pos))
 		local count = 1
 		while count <= table.getn(tocheck[pname]) and count <= maxcount do
-			check_node(pname, minetest.get_position_from_hash(tocheck[pname][count]), pos, vdir, radius)
+			check_node(pname, minetest.get_position_from_hash(tocheck[pname][count]), pos, vdir, radius, light_cone)
 			count = count + 1
 		end
 		count = count - 1 
@@ -176,7 +176,11 @@ local use_lamp = function(player, itemstack, radius, wear, mana)
 			minetest.set_node(fpos, {name="cavetools:light"})
 			if not use_abm then
 				local timer = minetest.get_node_timer(fpos)  -- use node timer
-				timer:set(math.random(60), 0)
+				if debug then
+					timer:set(2, 0)  -- short 2s flash
+				else
+					timer:set(5 + math.random(15), 0)  -- 5s flash with 15s decay
+				end
 			end
 		end
 		-- Clear temporary tables, which could be large.
@@ -189,28 +193,30 @@ local use_lamp = function(player, itemstack, radius, wear, mana)
 	end
 end
 
-minetest.register_tool("cavetools:flash_wand", {
-	description = "Flash Wand",
-	inventory_image = "cavetools_flash_wand.png",
-	stack_max = 1,
-	on_use = function(itemstack, player, pointed_thing)
-		local radius = 15  -- or 30
-		local wear = math.floor(65535/25)
-		local mana = 100
-		local worn_item = use_lamp(player, itemstack, radius, wear, mana)
-		return worn_item
-	end,
-})
-
 minetest.register_tool("cavetools:flash_lamp", {
 	description = "Flash Lamp",
 	inventory_image = "cavetools_flash_lamp.png",
 	stack_max = 1,
 	on_use = function(itemstack, player, pointed_thing)
-		local radius = 10  -- or 20
-		local wear = math.floor(65535/15)
+		local radius = 12  -- or 18
+		local light_cone = math.pi/6  -- 2*30°
+		local wear = math.floor(65535/60)  -- increase to 60
 		local mana = 0
-		local worn_item = use_lamp(player, itemstack, radius, wear, mana)
+		local worn_item = use_lamp(player, itemstack, radius, wear, mana, light_cone)
+		return worn_item
+	end,
+})
+
+minetest.register_tool("cavetools:flash_wand", {
+	description = "Flash Wand",
+	inventory_image = "cavetools_flash_wand.png",
+	stack_max = 1,
+	on_use = function(itemstack, player, pointed_thing)
+		local radius = 18  -- or 27
+		local light_cone = math.pi/4  -- 2*45°
+		local wear = math.floor(65535/100)  -- increase to 100
+		local mana = 100
+		local worn_item = use_lamp(player, itemstack, radius, wear, mana, light_cone)
 		return worn_item
 	end,
 })
@@ -220,10 +226,11 @@ minetest.register_tool("cavetools:super_flash_lamp", {
 	inventory_image = "cavetools_super_flash_lamp.png",
 	stack_max = 1,
 	on_use = function(itemstack, player, pointed_thing)
-		local radius = 20  -- or 40
-		local wear = math.floor(65535/40)
+		local radius = 24  -- or 36
+		local light_cone = math.pi/3  -- 2*60°
+		local wear = math.floor(65535/160)  -- increase to 160
 		local mana = 0
-		local worn_item = use_lamp(player, itemstack, radius, wear, mana)
+		local worn_item = use_lamp(player, itemstack, radius, wear, mana, light_cone)
 		return worn_item
 	end,
 })
