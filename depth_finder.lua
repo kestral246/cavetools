@@ -1,6 +1,6 @@
 -- Depth Finder [depth_finder]
 -- by David G (kestral246@gmail.com)
--- 2020-06-22
+-- 2024-03-10
 
 -- Either two flints or two diamonds--bang them together and the return echo indicates depth.
 
@@ -120,7 +120,7 @@ minetest.register_tool("cavetools:depth_finder_flint", {
 		local radius = 30
 		local height = 6
 		local depth = 40
-		local wear = math.floor(65535/25)
+		local wear = math.floor(65535/60)  -- increase to 60
 		local worn_item = use_finder(player, itemstack, radius, height, depth, wear)
 		return worn_item
 	end,
@@ -134,7 +134,7 @@ minetest.register_tool("cavetools:depth_finder_diamond", {
 		local radius = 50
 		local height = 10
 		local depth = 80
-		local wear = math.floor(65535/40)
+		local wear = math.floor(65535/120)  -- increase to 120
 		local worn_item = use_finder(player, itemstack, radius, height, depth, wear)
 		return worn_item
 	end,
