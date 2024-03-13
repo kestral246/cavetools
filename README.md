@@ -24,6 +24,13 @@ An override to the default ladders to allow them to be easily extended down by j
 - This can create freestanding ladders. If the lack of ladder thickness bothers you, you can use Linuxdirks **redef** mod, which provides 3-d ladders.
 - The **ropes** mod by FaceDeer has a similar option for ladders, but extends them upward. Cave Tools' ladder override will conflict with this, but can be disabled (see configuration below).
 
+Updates
+-------
+**2024-03-13**
+
+- Adjustments to flash lamp ranges and light cones, and duration of flashes.
+- Significantly increased number of uses for flash lamps and depth finders.
+
 Configuration
 -------------
 
