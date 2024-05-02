@@ -8,7 +8,7 @@ By David G (kestral246@gmail.com)
 
 A compilation of some of my other mods focused on making cave exploration easier.
 
-A set of flash lamps that momentarily light up the direction the player is pointed.
+A set of flash lamps that momentarily light up the direction the player is pointed. (**Note:** Pressing shift while left-clicking will activate extended-range flashes.)
 
 - Flash Lamp
 - Flash Wand
